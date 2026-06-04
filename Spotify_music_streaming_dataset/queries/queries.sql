@@ -153,3 +153,119 @@ FROM spotify
 SELECT *
 FROM ranked_songs
 WHERE rn=1;
+
+
+
+
+-- stream quartile 
+SELECT Track,
+Artist,
+Spotify_Streams,
+NTILE(4)
+OVER(
+	ORDER BY Spotify_Streams
+) AS stream_quartile
+FROM spotify ;
+
+
+-- songs above artist average
+SELECT *
+FROM spotify s
+WHERE Spotify_Streams >
+(
+SELECT AVG(Spotify_Streams)
+FROM spotify
+WHERE Artist = S.Artist
+) ;
+
+
+-- top 3 songs by every artist
+WITH ranked AS 
+(
+SELECT 
+Artist,
+Track,
+Spotify_Streams,
+DENSE_RANK() OVER(
+				PARTITION BY Artist
+				ORDER BY Spotify_Streams DESC) 
+                AS rnk
+FROM spotify
+)
+SELECT * 
+FROM ranked
+WHERE rnk <=3 ;
+
+
+-- running total streams
+SELECT
+Track,
+Spotify_Streams,
+SUM(Spotify_Streams) 
+OVER(
+ORDER BY Spotify_Streams DESC) AS running_total
+FROM spotify ;
+
+
+-- spotify vs youtube performance comparison
+SELECT
+Track,
+Spotify_Streams,
+Artist,
+YouTube_Views,
+CASE 
+	WHEN Spotify_Streams > YouTube_Views
+    THEN "Spotify Dominat"
+    ELSE "Youtube Dominat"
+END platform_lead
+FROM spotify ;
+
+
+-- artists with songs across multiple albums
+SELECT Artist,
+COUNT(DISTINCT Album_Name) AS albums
+FROM spotify
+GROUP BY Artist
+ORDER BY albums DESC;
+
+
+-- percentile ranking of songs
+SELECT Artist,
+Track,
+PERCENT_RANK() OVER(
+					ORDER BY Spotify_Streams) 
+                    AS percentile_rank
+FROM spotify
+ORDER BY  percentile_rank DESC;
+
+
+-- Cross platform reach
+SELECT Artist,
+Track,
+(
+Spotify_Streams +
+YouTube_Views +
+TikTok_Views +
+Pandora_Streams) AS total_reach
+FROM spotify
+ORDER BY  total_reach DESC;
+
+
+-- hidden artists 
+SELECT Artist,
+Track
+FROM spotify
+WHERE Spotify_Playlist_Count < 5000
+AND Spotify_Popularity > 80 ;
+
+
+-- total informations
+SELECT Artist,
+COUNT(*) AS total_tracks,
+SUM(Spotify_Streams) AS total_streams,
+AVG(Spotify_Popularity) AS avg_popularity,
+SUM(YouTube_Views) AS youtube_views,
+SUM(TikTok_Views) AS tiktok_views
+FROM spotify
+GROUP BY Artist
+ORDER BY total_streams;

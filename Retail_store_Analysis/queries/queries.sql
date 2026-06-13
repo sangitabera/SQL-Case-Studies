@@ -115,3 +115,81 @@ ROUND(SUM(Weekly_Sales),2) AS total_sales
 FROM sales
 GROUP BY Year, Month
 ORDER BY Year, Month ;
+
+
+-- Yearly Sales
+SELECT COALESCE(YEAR(Date), 'Unknown') AS Year, 
+SUM(Weekly_Sales) AS Total_Sales 
+FROM sales 
+GROUP BY Year;
+
+
+-- Weekly Sales Trend
+SELECT Date,
+SUM(Weekly_Sales) AS weekly_Sales 
+FROM sales
+GROUP BY Date
+ORDER BY Date ;
+
+
+-- Highest Sales Date
+SELECT Date,
+SUM(Weekly_Sales) AS weekly_Sales 
+FROM sales
+GROUP BY Date
+ORDER BY Date DESC
+LIMIT 1 ;
+
+
+-- Average Temperature by Store
+SELECT Store,
+ROUND(AVG(Temperature),2) AS avg_temp
+FROM features
+GROUP BY Store
+ORDER BY avg_temp ;
+
+
+-- Average Fuel Price
+SELECT 
+ROUND(AVG(Fuel_Price),2) AS avg_fuel_price
+FROM features ;
+
+
+-- Stores with Highest Unemployment
+SELECT Store,
+ROUND(SUM(Unemployment),2) AS unemployment
+FROM features
+GROUP BY Store
+ORDER BY unemployment DESC 
+LIMIT 5 ;
+
+
+-- Store Type Wise Sales
+SELECT st.Type,
+ROUND(SUM(Weekly_Sales),2) AS total_sales
+FROM stores st 
+JOIN sales sa
+ON st.Store = sa.Store
+GROUP BY st.Type
+ORDER BY total_sales DESC ;
+
+
+-- Average Sales by Store Type
+SELECT st.Type,
+ROUND(AVG(Weekly_Sales),2) AS avg_sales
+FROM stores st 
+JOIN sales sa
+ON st.Store = sa.Store
+GROUP BY st.Type
+ORDER BY avg_sales DESC ;
+
+
+-- Sales with Temperature
+SELECT sa.Store,
+sa.Date,
+sa.Weekly_Sales,
+ft.Temperature
+FROM sales sa
+JOIN features ft
+ON sa.Store = ft.Store
+AND sa.Date = ft.Date

@@ -193,3 +193,33 @@ FROM sales sa
 JOIN features ft
 ON sa.Store = ft.Store
 AND sa.Date = ft.Date
+
+
+-- Top Selling Store in Each Store Type
+SELECT st.Type,
+       sa.Store,
+       SUM(sa.Weekly_Sales) AS Total_Sales
+FROM sales sa
+JOIN stores st
+ON sa.Store = st.Store
+GROUP BY st.Type, sa.Store
+ORDER BY st.Type, Total_Sales DESC;
+
+
+-- Rank Stores by Sales
+SELECT Store,
+       SUM(Weekly_Sales) AS Total_Sales,
+       RANK() OVER(
+           ORDER BY SUM(Weekly_Sales) DESC
+       ) AS Sales_Rank
+FROM sales
+GROUP BY Store;
+
+
+-- Running Total of Sales
+SELECT Date,
+       SUM(Weekly_Sales) AS Daily_Sales,
+       SUM(SUM(Weekly_Sales))
+       OVER(ORDER BY Date) AS Running_Total
+FROM sales
+GROUP BY Date;
